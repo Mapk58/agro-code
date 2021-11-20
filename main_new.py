@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from math import *
 from vincenty import vincenty
-from rdp import rdp
+
 class agro_sim():
     def __init__(self, ppm, bbox, tool, radius) -> None:
         self.tool = ppm * tool
@@ -66,7 +66,7 @@ class agro_sim():
         a, b = round(self.tool * sin(angle)), round(self.tool * cos(angle))
         cv2.line(self.filled, (current_point[0] + a, current_point[1] - b), (current_point[0] - a, current_point[1] + b), (0, 255, 0), 2, cv2.LINE_8)
         if current_point == (x2, y2):
-            cv2.circle(self.filled, (x2, y2), round(self.tool + 1), (0, 255, 0), -1)
+            cv2.circle(self.filled, (x2, y2), self.tool + 1, (0, 255, 0), -1)
             return 1
         else:
             return 0
@@ -78,7 +78,11 @@ class agro_sim():
             cv2.imshow("Filled", self.filled)
             cv2.imshow("track", self.track)
         else:
+            
+
+            cv2.resize(self.field + self.filled + self.track, (1080, 1920), interpolation = cv2.INTER_AREA)
             cv2.imshow("Agro", self.field + self.filled + self.track)
+
         if not delay is None:
             cv2.waitKey(delay)
 
@@ -87,50 +91,55 @@ def translate_coords(pixel_coords, convertation_table):
     for point in pixel_coords:
         geo_coords.append(np.array(convertation_table[point[1]][point[0]]))
     return np.array(geo_coords)
-class line:
-    def __init__(self, p1, p2):
-        x1, y1 = p1[0], p1[1]
-        x2, y2 = p2[0], p2[1]
-        self.length = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-        self.ang = atan2(y2 - y1, x2 - x1)
-        self.p1, self.p2 = p1, p2
-    def coord(self):
-        return self.p1, self.p2
 
 if __name__ == "__main__":
-    sf = shapefile.Reader("Trimble/Pole")
+    
+    from main import path_callback
+    
+    # масштаб (пикселей на метр)
+    # влияет на точность
+    ppm = 2
+    # параметры для поиска пути объезда по периметру (крутилки)
+    # все числа float, кроме smoothing
+    # расстояние между центром робота и границей поля aka радиус сеялки в метрах [0; inf)
+    obstacle_size = 7
+    # радиус поворота в метрах [0; inf)
+    angle_radius = 6.0
+    # степень сглаживания [1; inf)
+    smoothing = 1
+    # степень упрощения пути алгоритмом Рамера-Дугласа-Пекера (0; inf)
+    rdp_epsilon = 1
+
+    # точка, рядом с которой должен начинаться путь
+
+    fields_path_dir_list = ["Trimble/Pole",
+                            "Moscow/Moscow",
+                            "Cherep/Cherep",
+                            "Ukraine/Ukraine",
+                            "Belarus/Belarus"]
+
+    start_point_field_list =   [(26.97198642737419,53.21268092272585),
+                                (37.55972921848297,55.837689974599186),
+                                (37.85521745681763,59.18315110901265),
+                                (34.83020335435867,49.54095106379548),
+                                (27.375474125146866, 53.26050256167628)]                        
+
+    place_id = 0
+    start_point = start_point_field_list[place_id]
+    path_dir = fields_path_dir_list[place_id]
+
+    image, path_image, geo_coords = path_callback(ppm, path_dir, obstacle_size, angle_radius, smoothing, rdp_epsilon, start_point)
+
+    sf = shapefile.Reader(path_dir)
     s = sf.shape(0)
     points = s.points
-    sim = agro_sim(3, sf.bbox, 6, 5)
+    sim = agro_sim(1, sf.bbox, 5, 5)
     sim.draw_contour(points, 1)
-    import main
-    track = rdp(main.geo_coords, epsilon = 1 / (4 * 10e3))
+    
+    track = geo_coords
     for i in range(len(track) - 1):
         k = 0
-        while not sim.step_tractor(track[i], track[i + 1], k, True):
-            #sim.show(1)
+        while not sim.step_tractor(track[i], track[i+1], k, True):
+            sim.show(1)
             k += 1
-    sim.show(1)
-    '''
-    contours = cv2.findContours(cv2.split(sim.track)[2], cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-    for i in contours[0]:
-        print(i)
-    '''
-    lines_xy = [[]]
-    for i in range(len(track) - 1):
-        p1, p2 = track[i], track[i + 1]
-        x1 = int(round((p1[0] - sim.min_x) / sim.xw_step))
-        y1 = int(round((p1[1] - sim.min_y) / sim.yh_step))
-        x2 = int(round((p2[0] - sim.min_x) / sim.xw_step))
-        y2 = int(round((p2[1] - sim.min_y) / sim.yh_step))
-        #print(x1, y1, x2, y2)
-        lines_xy[0].append(line((x1, y1), (x2, y2)))
-    lines_xy[0].sort(key=lambda x:x.length)
-
-    for i in lines_xy[0]:
-        print(i.length)
-    contour = np.array([i.coord()[0] for i in lines_xy[0]])
-    print(contour)
-    area = cv2.contourArea(contour)
-    print(area)
     cv2.waitKey(0)
