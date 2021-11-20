@@ -70,20 +70,30 @@ def create_image(points, rect, ppm=1):
     return img, p2c
 
 
-def get_perimeter_path(img, ppm, rdp_epsilon=1, obstacle_size=5, enable_showing=False):
+def get_perimeter_path(img, ppm, rdp_epsilon=1, obstacle_size=5, angle_radius=5, smoothing=1, enable_showing=False):
     image = img.copy()
 
     cv2.floodFill(image, None, (int(image.shape[1] / 2), int(image.shape[0] / 2)), 255)
     show_image('filled', image, enable_showing)
 
+    # уходим подальше от краёв поля
     kernel_size = obstacle_size * ppm
-    cv2.erode(image, np.ones((kernel_size, kernel_size), np.uint8), image)
+    image = cv2.erode(image, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size)), image)
     show_image('eroded', image, enable_showing)
 
+    # обрезаем углы
+    kernel_size = angle_radius * ppm
+    image = cv2.morphologyEx(image, cv2.MORPH_OPEN,
+                             cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size)),
+                             iterations=smoothing)
+    show_image('opened', image, enable_showing)
+
+    # строим путь
     contours, hierarchy = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     field_edge = np.array(contours).reshape((-1, 2))
     field_edge = rdp(field_edge, epsilon=rdp_epsilon)
 
+    # визуализируем
     path = np.zeros(image.shape, np.uint8)
     for i in range(len(field_edge) - 1):
         p1 = field_edge[i]
@@ -101,13 +111,14 @@ def translate_coords(pixel_coords, convertation_table):
     return np.array(geo_coords)
 
 
-# крутилки
+# масштаб (пикселей на метр)
 ppm = 2
 
 points, rect = read_points(bbox=True)
 image, convertation_table = create_image(points, rect, ppm=ppm)
 
-path, pixel_coords = get_perimeter_path(image, ppm, obstacle_size=30, rdp_epsilon=5)
+path, pixel_coords = get_perimeter_path(image, ppm, obstacle_size=20, rdp_epsilon=3, angle_radius=10, smoothing=1,
+                                        enable_showing=False)
 
 geo_coords = translate_coords(pixel_coords, convertation_table)
 print(geo_coords)
