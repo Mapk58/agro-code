@@ -25,7 +25,7 @@ def show_image(name, image, enable_showing):
         cv2.imshow(name, image)
 
 
-def read_points(path="Trimble/Pole", bbox=False):
+def read_points(path, bbox=False):
     sf = shapefile.Reader(path)
     s = sf.shape(0)
     points = s.points
@@ -131,10 +131,9 @@ def translate_coords(pixel_coords, convertation_table):
     return np.array(geo_coords)
 
 
-def path_callback(ppm=1, path="Trimble/Pole", obstacle_size=20.0, angle_radius=10.0, smoothing=1, rdp_epsilon=3.0,
-                  start_point=(26.973208407171384, 53.21215603723456)):
+def path_callback(ppm = 1, path_dir= "Trimble/Pole", obstacle_size=20.0, angle_radius=10.0, smoothing=1, rdp_epsilon=3.0, start_point=(25,50)):
     # выгрузка точек из файлов
-    points, rect = read_points(path=path, bbox=True)
+    points, rect = read_points(path_dir, bbox=True)
 
     # создание изображения и таблицы конвертации
     image, convertation_table = create_image(points, rect, ppm=ppm)
@@ -150,7 +149,7 @@ def path_callback(ppm=1, path="Trimble/Pole", obstacle_size=20.0, angle_radius=1
 
     return image, path_image, geo_coords
 
-
+'''
 # масштаб (пикселей на метр)
 # влияет на точность
 ppm = 2
@@ -166,10 +165,11 @@ smoothing = 1
 rdp_epsilon = 1
 
 # точка, рядом с которой должен начинаться путь
-start_point = (26.973208407171384, 53.21215603723456)
+#start_point = (27.375474125146866, 53.26050256167628)
 
-image, path_image, geo_coords = path_callback(ppm, "Trimble/Pole", obstacle_size, angle_radius, smoothing, rdp_epsilon,
-                                              start_point)
+#path_dir = "Belarus/Belarus"
+
+image, path_image, geo_coords = path_callback(ppm, path_dir, obstacle_size, angle_radius, smoothing, rdp_epsilon, start_point)
 
 # вывод координат пути на экран
 # print(geo_coords)
@@ -183,4 +183,4 @@ print(']')
 cv2.imshow('original_field_edge', image)
 cv2.imshow('path', path_image + image)
 
-cv2.waitKey()
+cv2.waitKey()'''
