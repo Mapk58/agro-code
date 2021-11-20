@@ -91,7 +91,7 @@ class line:
     def __init__(self, p1, p2):
         x1, y1 = p1[0], p1[1]
         x2, y2 = p2[0], p2[1]
-        self.length = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+        self.length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
         self.ang = atan2(y2 - y1, x2 - x1)
         self.p1, self.p2 = p1, p2
     def coord(self):
@@ -110,7 +110,7 @@ if __name__ == "__main__":
         while not sim.step_tractor(track[i], track[i + 1], k, True):
             #sim.show(1)
             k += 1
-    sim.show(1)
+    #sim.show(1)
     '''
     contours = cv2.findContours(cv2.split(sim.track)[2], cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     for i in contours[0]:
@@ -126,11 +126,15 @@ if __name__ == "__main__":
         #print(x1, y1, x2, y2)
         lines_xy[0].append(line((x1, y1), (x2, y2)))
     lines_xy[0].sort(key=lambda x:x.length)
-
+    lines_xy[0] = lines_xy[0][::-1]
     for i in lines_xy[0]:
-        print(i.length)
+        print(i.length, i.ang * 180 / pi)
     contour = np.array([i.coord()[0] for i in lines_xy[0]])
-    print(contour)
+    image = np.zeros_like(sim.field)
+    cv2.line(image, lines_xy[0][0].coord()[0], lines_xy[0][0].coord()[1], (0, 0, 255), 2)
+    #print(lines_xy[0][0].ang * 180 / pi)
+    cv2.imshow("Line", image)
     area = cv2.contourArea(contour)
     print(area)
+
     cv2.waitKey(0)
