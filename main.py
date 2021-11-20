@@ -126,16 +126,31 @@ def translate_coords(pixel_coords, convertation_table):
     return np.array(geo_coords)
 
 
+def path_callback(ppm=1, path="Trimble/Pole", obstacle_size=20.0, angle_radius=10.0, smoothing=1, rdp_epsilon=3.0,
+         start_point=(26.973208407171384, 53.21215603723456)):
+    # выгрузка точек из файлов
+    points, rect = read_points(path=path, bbox=True)
+
+    # создание изображения и таблицы конвертации
+    image, convertation_table = create_image(points, rect, ppm=ppm)
+
+    # поиск пути объезда по периметру
+    path_image, pixel_coords = get_perimeter_path(image, ppm, obstacle_size, angle_radius, smoothing, rdp_epsilon)
+
+    # перевод координат пути в географические
+    geo_coords = translate_coords(pixel_coords, convertation_table)
+
+    # выбор стартовой точки, наиболее близкой к заданной
+    geo_coords = set_start_point(start_point, geo_coords)
+
+    return image, path_image, geo_coords
+
+
+
+
 # масштаб (пикселей на метр)
 # влияет на точность
 ppm = 2
-
-# выгрузка точек из файлов
-points, rect = read_points(path="Trimble/Pole", bbox=True)
-
-# создание изображения и таблицы конвертации
-image, convertation_table = create_image(points, rect, ppm=ppm)
-
 # параметры для поиска пути объезда по периметру (крутилки)
 # все числа float, кроме smoothing
 # расстояние между центром робота и границей поля aka радиус сеялки в метрах [0; inf)
@@ -147,21 +162,15 @@ smoothing = 1
 # степень упрощения пути алгоритмом Рамера-Дугласа-Пекера (0; inf)
 rdp_epsilon = 3.0
 
-# поиск пути объезда по периметру
-path, pixel_coords = get_perimeter_path(image, ppm, obstacle_size, angle_radius, smoothing, rdp_epsilon)
+# точка, рядом с которой должен начинаться путь
+start_point = (26.973208407171384, 53.21215603723456)
 
-# перевод координат пути в географические
-geo_coords = translate_coords(pixel_coords, convertation_table)
-
-# выбор стартовой точки, наиболее близкой к заданной
-start = (26.973208407171384, 53.21215603723456)
-geo_coords = set_start_point(start, geo_coords)
+image, path_image, geo_coords = path_callback(ppm, "Trimble/Pole", obstacle_size, angle_radius, smoothing, rdp_epsilon, start_point)
 
 # вывод координат пути на экран
 print(geo_coords)
-
 # вывод границ поля и полученного пути на экран
 cv2.imshow('original_field_edge', image)
-cv2.imshow('path', path)
+cv2.imshow('path', path_image)
 
 cv2.waitKey()
