@@ -96,7 +96,8 @@ if __name__ == "__main__":
     sim.draw_contour(points, 1)
     o_point = (26.973251, 53.212172)
     d_point = (26.974555, 53.212870)
-    from track import track
+    import main
+    track = main.geo_coords
     for i in range(len(track) - 1):
         k = 0
         while not sim.step_tractor(track[i], track[i+1], k, True):
