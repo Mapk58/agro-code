@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from math import *
 from vincenty import vincenty
-
+from rdp import rdp
 class agro_sim():
     def __init__(self, ppm, bbox, tool, radius) -> None:
         self.tool = ppm * tool
@@ -66,7 +66,7 @@ class agro_sim():
         a, b = round(self.tool * sin(angle)), round(self.tool * cos(angle))
         cv2.line(self.filled, (current_point[0] + a, current_point[1] - b), (current_point[0] - a, current_point[1] + b), (0, 255, 0), 2, cv2.LINE_8)
         if current_point == (x2, y2):
-            cv2.circle(self.filled, (x2, y2), self.tool + 1, (0, 255, 0), -1)
+            cv2.circle(self.filled, (x2, y2), round(self.tool + 1), (0, 255, 0), -1)
             return 1
         else:
             return 0
@@ -87,6 +87,15 @@ def translate_coords(pixel_coords, convertation_table):
     for point in pixel_coords:
         geo_coords.append(np.array(convertation_table[point[1]][point[0]]))
     return np.array(geo_coords)
+class line:
+    def __init__(self, p1, p2):
+        x1, y1 = p1[0], p1[1]
+        x2, y2 = p2[0], p2[1]
+        self.length = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+        self.ang = atan2(y2 - y1, x2 - x1)
+        self.p1, self.p2 = p1, p2
+    def coord(self):
+        return self.p1, self.p2
 
 if __name__ == "__main__":
     sf = shapefile.Reader("Trimble/Pole")
@@ -94,13 +103,31 @@ if __name__ == "__main__":
     points = s.points
     sim = agro_sim(3, sf.bbox, 6, 5)
     sim.draw_contour(points, 1)
-    o_point = (26.973251, 53.212172)
-    d_point = (26.974555, 53.212870)
     import main
-    track = main.geo_coords
+    track = rdp(main.geo_coords, epsilon = 1 / (4 * 10e3))
     for i in range(len(track) - 1):
         k = 0
-        while not sim.step_tractor(track[i], track[i+1], k, True):
+        while not sim.step_tractor(track[i], track[i + 1], k, True):
             sim.show(1)
             k += 1
+    sim.show(1)
+    '''
+    contours = cv2.findContours(cv2.split(sim.track)[2], cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    for i in contours[0]:
+        print(i)
+    '''
+    lines_xy = []
+    for i in range(len(track) - 1):
+        p1, p2 = track[i], track[i + 1]
+        x1 = int(round((p1[0] - sim.min_x) / sim.xw_step))
+        y1 = int(round((p1[1] - sim.min_y) / sim.yh_step))
+        x2 = int(round((p2[0] - sim.min_x) / sim.xw_step))
+        y2 = int(round((p2[1] - sim.min_y) / sim.yh_step))
+        #print(x1, y1, x2, y2)
+        lines_xy.append(line((x1, y1), (x2, y2)))
+    lines_xy.sort(key=lambda x:x.length)
+
+    for i in lines_xy:
+        print(i.length)
+
     cv2.waitKey(0)
