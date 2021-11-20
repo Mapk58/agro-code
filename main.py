@@ -17,7 +17,7 @@ def find_nearest_coord(coord, points):
 
 def set_start_point(coord, points):
     index = find_nearest_coord(coord, points)
-    return np.concatenate((points[index:], points[:index]), axis=0)
+    return np.concatenate((points[index:], points[:index + 1]), axis=0)
 
 
 def show_image(name, image, enable_showing):
