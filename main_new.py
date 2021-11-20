@@ -108,7 +108,7 @@ if __name__ == "__main__":
     for i in range(len(track) - 1):
         k = 0
         while not sim.step_tractor(track[i], track[i + 1], k, True):
-            sim.show(1)
+            #sim.show(1)
             k += 1
     sim.show(1)
     '''
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     for i in contours[0]:
         print(i)
     '''
-    lines_xy = []
+    lines_xy = [[]]
     for i in range(len(track) - 1):
         p1, p2 = track[i], track[i + 1]
         x1 = int(round((p1[0] - sim.min_x) / sim.xw_step))
@@ -124,10 +124,13 @@ if __name__ == "__main__":
         x2 = int(round((p2[0] - sim.min_x) / sim.xw_step))
         y2 = int(round((p2[1] - sim.min_y) / sim.yh_step))
         #print(x1, y1, x2, y2)
-        lines_xy.append(line((x1, y1), (x2, y2)))
-    lines_xy.sort(key=lambda x:x.length)
+        lines_xy[0].append(line((x1, y1), (x2, y2)))
+    lines_xy[0].sort(key=lambda x:x.length)
 
-    for i in lines_xy:
+    for i in lines_xy[0]:
         print(i.length)
-
+    contour = np.array([i.coord()[0] for i in lines_xy[0]])
+    print(contour)
+    area = cv2.contourArea(contour)
+    print(area)
     cv2.waitKey(0)
