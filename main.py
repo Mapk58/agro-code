@@ -25,7 +25,7 @@ def show_image(name, image, enable_showing):
         cv2.imshow(name, image)
 
 
-def read_points(path="Trimble/Pole", bbox=False):
+def read_points(path="Belarus/Belarus", bbox=False):
     sf = shapefile.Reader(path)
     s = sf.shape(0)
     points = s.points
@@ -98,9 +98,7 @@ def get_perimeter_path(img, ppm, obstacle_size=5, angle_radius=5, smoothing=1, r
 
     # обрезаем углы
     kernel_size = int(angle_radius * ppm) * 2
-    image = cv2.morphologyEx(image, cv2.MORPH_OPEN,
-                             cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size)),
-                             iterations=smoothing)
+    image = cv2.morphologyEx(image, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size)), iterations=smoothing)
     show_image('opened', image, enable_showing)
 
     # строим путь
@@ -131,8 +129,7 @@ def translate_coords(pixel_coords, convertation_table):
     return np.array(geo_coords)
 
 
-def path_callback(ppm=1, path="Trimble/Pole", obstacle_size=20.0, angle_radius=10.0, smoothing=1, rdp_epsilon=3.0,
-                  start_point=(26.973208407171384, 53.21215603723456)):
+def path_callback(ppm=1, path="Belarus/Belarus", obstacle_size=20.0, angle_radius=10.0, smoothing=1, rdp_epsilon=3.0, start_point=(27.35642910003662, 53.26785667156712)):
     # выгрузка точек из файлов
     points, rect = read_points(path=path, bbox=True)
 
@@ -166,10 +163,9 @@ smoothing = 1
 rdp_epsilon = 1
 
 # точка, рядом с которой должен начинаться путь
-start_point = (26.973208407171384, 53.21215603723456)
+start_point = (27.35642910003662, 53.26785667156712)
 
-image, path_image, geo_coords = path_callback(ppm, "Trimble/Pole", obstacle_size, angle_radius, smoothing, rdp_epsilon,
-                                              start_point)
+image, path_image, geo_coords = path_callback(ppm, "Belarus/Belarus", obstacle_size, angle_radius, smoothing, rdp_epsilon, start_point)
 
 # вывод координат пути на экран
 # print(geo_coords)
