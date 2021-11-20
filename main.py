@@ -92,12 +92,12 @@ def get_perimeter_path(img, ppm, obstacle_size=5, angle_radius=5, smoothing=1, r
     show_image('filled', image, enable_showing)
 
     # уходим подальше от краёв поля
-    kernel_size = int(obstacle_size * ppm)
+    kernel_size = int(obstacle_size * ppm) * 2
     image = cv2.erode(image, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size)), image)
     show_image('eroded', image, enable_showing)
 
     # обрезаем углы
-    kernel_size = int(angle_radius * ppm)
+    kernel_size = int(angle_radius * ppm) * 2
     image = cv2.morphologyEx(image, cv2.MORPH_OPEN,
                              cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size)),
                              iterations=smoothing)
@@ -110,6 +110,11 @@ def get_perimeter_path(img, ppm, obstacle_size=5, angle_radius=5, smoothing=1, r
 
     # визуализируем
     path = np.zeros(image.shape, np.uint8)
+    for i in range(len(field_edge) - 1):
+        p1 = field_edge[i]
+        p2 = field_edge[i + 1]
+        cv2.line(path, p1, p2, 128, 24)
+    # доп линия
     for i in range(len(field_edge) - 1):
         p1 = field_edge[i]
         p2 = field_edge[i + 1]
@@ -127,7 +132,7 @@ def translate_coords(pixel_coords, convertation_table):
 
 
 def path_callback(ppm=1, path="Trimble/Pole", obstacle_size=20.0, angle_radius=10.0, smoothing=1, rdp_epsilon=3.0,
-         start_point=(26.973208407171384, 53.21215603723456)):
+                  start_point=(26.973208407171384, 53.21215603723456)):
     # выгрузка точек из файлов
     points, rect = read_points(path=path, bbox=True)
 
@@ -146,31 +151,36 @@ def path_callback(ppm=1, path="Trimble/Pole", obstacle_size=20.0, angle_radius=1
     return image, path_image, geo_coords
 
 
-
-
 # масштаб (пикселей на метр)
 # влияет на точность
 ppm = 2
 # параметры для поиска пути объезда по периметру (крутилки)
 # все числа float, кроме smoothing
 # расстояние между центром робота и границей поля aka радиус сеялки в метрах [0; inf)
-obstacle_size = 20.0
+obstacle_size = 7
 # радиус поворота в метрах [0; inf)
-angle_radius = 10.0
+angle_radius = 6.0
 # степень сглаживания [1; inf)
 smoothing = 1
 # степень упрощения пути алгоритмом Рамера-Дугласа-Пекера (0; inf)
-rdp_epsilon = 3.0
+rdp_epsilon = 1
 
 # точка, рядом с которой должен начинаться путь
 start_point = (26.973208407171384, 53.21215603723456)
 
-image, path_image, geo_coords = path_callback(ppm, "Trimble/Pole", obstacle_size, angle_radius, smoothing, rdp_epsilon, start_point)
+image, path_image, geo_coords = path_callback(ppm, "Trimble/Pole", obstacle_size, angle_radius, smoothing, rdp_epsilon,
+                                              start_point)
 
 # вывод координат пути на экран
-print(geo_coords)
+# print(geo_coords)
+
+print('[')
+for point in geo_coords:
+    print('[', point[0], ',', point[1], '],')
+print(']')
+
 # вывод границ поля и полученного пути на экран
 cv2.imshow('original_field_edge', image)
-cv2.imshow('path', path_image)
+cv2.imshow('path', path_image + image)
 
 cv2.waitKey()
