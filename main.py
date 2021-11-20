@@ -5,6 +5,21 @@ from vincenty import vincenty
 from rdp import rdp
 
 
+def find_nearest_coord(coord, points):
+    index = 0
+    dist = 10e10
+    for i in range(len(points)):
+        if (vincenty(coord, points[i]) < dist):
+            dist = vincenty(coord, points[i])
+            index = i
+    return index
+
+
+def set_start_point(coord, points):
+    index = find_nearest_coord(coord, points)
+    return np.concatenate((points[index:], points[:index]), axis=0)
+
+
 def show_image(name, image, enable_showing):
     if (enable_showing):
         cv2.imshow(name, image)
@@ -59,8 +74,8 @@ def create_image(points, rect, ppm=1):
 
     # таблица совместимости пиксель-координата
     p2c = np.array(
-        [np.array([(min_x + xw_step * i, min_y + yh_step * j) for i in range(w_average * ppm)]) for j in
-         range(h_average * ppm)])
+        [np.array([(min_x + xw_step * i, min_y + yh_step * j) for i in range(int(w_average * ppm))]) for j in
+         range(int(h_average * ppm))])
 
     # отрисовываем контур поля (возможно, стоит указывать ширину линии в метрах)
     draw_contour(img, points, min_x, min_y, xw_step, yh_step, width=1)
@@ -70,19 +85,19 @@ def create_image(points, rect, ppm=1):
     return img, p2c
 
 
-def get_perimeter_path(img, ppm, rdp_epsilon=1, obstacle_size=5, angle_radius=5, smoothing=1, enable_showing=False):
+def get_perimeter_path(img, ppm, obstacle_size=5, angle_radius=5, smoothing=1, rdp_epsilon=1, enable_showing=False):
     image = img.copy()
 
     cv2.floodFill(image, None, (int(image.shape[1] / 2), int(image.shape[0] / 2)), 255)
     show_image('filled', image, enable_showing)
 
     # уходим подальше от краёв поля
-    kernel_size = obstacle_size * ppm
+    kernel_size = int(obstacle_size * ppm)
     image = cv2.erode(image, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size)), image)
     show_image('eroded', image, enable_showing)
 
     # обрезаем углы
-    kernel_size = angle_radius * ppm
+    kernel_size = int(angle_radius * ppm)
     image = cv2.morphologyEx(image, cv2.MORPH_OPEN,
                              cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size)),
                              iterations=smoothing)
@@ -112,17 +127,40 @@ def translate_coords(pixel_coords, convertation_table):
 
 
 # масштаб (пикселей на метр)
+# влияет на точность
 ppm = 2
 
-points, rect = read_points(bbox=True)
+# выгрузка точек из файлов
+points, rect = read_points(path="Trimble/Pole", bbox=True)
+
+# создание изображения и таблицы конвертации
 image, convertation_table = create_image(points, rect, ppm=ppm)
 
-path, pixel_coords = get_perimeter_path(image, ppm, obstacle_size=20, rdp_epsilon=3, angle_radius=10, smoothing=1,
-                                        enable_showing=False)
+# параметры для поиска пути объезда по периметру (крутилки)
+# все числа float, кроме smoothing
+# расстояние между центром робота и границей поля aka радиус сеялки в метрах [0; inf)
+obstacle_size = 20.0
+# радиус поворота в метрах [0; inf)
+angle_radius = 10.0
+# степень сглаживания [1; inf)
+smoothing = 1
+# степень упрощения пути алгоритмом Рамера-Дугласа-Пекера (0; inf)
+rdp_epsilon = 3.0
 
+# поиск пути объезда по периметру
+path, pixel_coords = get_perimeter_path(image, ppm, obstacle_size, angle_radius, smoothing, rdp_epsilon)
+
+# перевод координат пути в географические
 geo_coords = translate_coords(pixel_coords, convertation_table)
+
+# выбор стартовой точки, наиболее близкой к заданной
+start = (26.973208407171384, 53.21215603723456)
+geo_coords = set_start_point(start, geo_coords)
+
+# вывод координат пути на экран
 print(geo_coords)
 
+# вывод границ поля и полученного пути на экран
 cv2.imshow('original_field_edge', image)
 cv2.imshow('path', path)
 
