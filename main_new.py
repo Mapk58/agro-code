@@ -92,11 +92,17 @@ class line:
         x1, y1 = p1[0], p1[1]
         x2, y2 = p2[0], p2[1]
         self.length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-        self.ang = atan2(y2 - y1, x2 - x1)
+        self.ang = atan2(y1 - y2, x1 - x2)
+        #self.ang = atan2(x2 - x1, y2 - y1)
         self.p1, self.p2 = p1, p2
     def coord(self):
         return self.p1, self.p2
-
+class point:
+    def __init__(self, p, sim):
+        self.p = p
+        self.x = int(round((p[0] - sim.min_x) / sim.xw_step))
+        self.y = int(round((p[1] - sim.min_y) / sim.yh_step))
+        self.p = (self.x, self.y)
 if __name__ == "__main__":
     sf = shapefile.Reader("Trimble/Pole")
     s = sf.shape(0)
@@ -116,6 +122,15 @@ if __name__ == "__main__":
     for i in contours[0]:
         print(i)
     '''
+
+
+
+
+    
+    points = []
+    for i in track:
+        points.append(point(i, sim))
+    
     lines_xy = [[]]
     for i in range(len(track) - 1):
         p1, p2 = track[i], track[i + 1]
@@ -127,14 +142,19 @@ if __name__ == "__main__":
         lines_xy[0].append(line((x1, y1), (x2, y2)))
     lines_xy[0].sort(key=lambda x:x.length)
     lines_xy[0] = lines_xy[0][::-1]
-    for i in lines_xy[0]:
-        print(i.length, i.ang * 180 / pi)
+    
     contour = np.array([i.coord()[0] for i in lines_xy[0]])
     image = np.zeros_like(sim.field)
-    cv2.line(image, lines_xy[0][0].coord()[0], lines_xy[0][0].coord()[1], (0, 0, 255), 2)
-    #print(lines_xy[0][0].ang * 180 / pi)
+    z = 1
+    cv2.line(image, lines_xy[0][z].coord()[0], lines_xy[0][z].coord()[1], (0, 0, 255), 2)
+
+    points.sort(key=lambda x:(x.p[1] - round(x.p[0] * tan(lines_xy[0][z].ang))))
+    for i in range(len(points)):
+       print(points[i].p, points[i].p[1] - round(points[i].p[0] * tan(lines_xy[0][z].ang)))
+       cv2.circle(image, points[i].p, 2, (0, 255, 0), -1)
+       cv2.imshow("Line", image)
+       cv2.waitKey(0)
     cv2.imshow("Line", image)
     area = cv2.contourArea(contour)
-    print(area)
 
     cv2.waitKey(0)
