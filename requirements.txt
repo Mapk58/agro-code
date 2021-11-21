@@ -2,7 +2,7 @@ fastapi
 typing
 requests
 numpy
-cv2
+opencv-contrib-python
 shapefile
 vincenty
 rdp
