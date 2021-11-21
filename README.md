@@ -7,4 +7,4 @@ cd AGRO_CODE_MISIS_KIK/agro-code/
 python3 main.py
 python3 main_new.py
 ```
-![Иллюстрация к проекту](https://github.com/jon/coolproject/raw/master/image/image.png)
+![Backend](https://github.com/Mapk58/agro-code/blob/main/Media/image_2021-11-21_14-54-23.png)
