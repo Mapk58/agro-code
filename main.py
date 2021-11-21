@@ -3,7 +3,7 @@ from path_planner import path_callback, translate_coords, set_start_point, hatch
 # масштаб (пикселей на метр)
 ppm = 2
 # расстояние между центром робота и границей поля aka радиус сеялки в метрах [0; inf)
-obstacle_size = 6
+obstacle_size = 7
 # радиус поворота в метрах [0; inf)
 angle_radius = 6.0
 # степень сглаживания [1; inf)
