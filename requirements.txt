@@ -1,0 +1,9 @@
+fastapi
+typing
+requests
+numpy
+cv2
+shapefile
+vincenty
+rdp
+shutil
