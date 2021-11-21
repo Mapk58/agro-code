@@ -135,7 +135,7 @@ def translate_coords(pixel_coords, convertation_table):
 
 
 def path_callback(ppm, path, obstacle_size=20.0, angle_radius=10.0, smoothing=1, rdp_epsilon=3.0,
-                  start_point=(26.973208407171384, 53.21215603723456)):
+                  start_point=(26.973208407171384, 53.21215603723456), enable_showing=True):
     # выгрузка точек из файлов
     points, rect = read_points(path=path, bbox=True)
 
@@ -143,11 +143,11 @@ def path_callback(ppm, path, obstacle_size=20.0, angle_radius=10.0, smoothing=1,
     image, convertation_table = create_image(points, rect, ppm=ppm)
 
     # поиск пути объезда по периметру
-    path_image, path, path_simple = get_perimeter_path(image, ppm, obstacle_size, angle_radius, smoothing, rdp_epsilon)
+    path_image, path, path_simple = get_perimeter_path(image, ppm, obstacle_size, angle_radius, smoothing, rdp_epsilon, enable_showing=True)
 
     # вывод границ поля и полученного пути на экран
-    # cv2.imshow('original_field_edge', image)
-    # cv2.imshow('path', path_image + image)
+    cv2.imshow('original_field_edge', image)
+    cv2.imshow('path_with_edge', path_image + image)
     # cv2.waitKey()
     return path, path_simple, convertation_table
 
@@ -208,7 +208,7 @@ def hatching_planning(points):
     # print(tree)
     a = tree[0]['done']
     toReturn = max(tree, key=lambda x: cv2.contourArea(x['done'][0]))
-    return toReturn['done']
+    return toReturn['done'][0]
 
 def split_into_fields(field, points):
     if (len(points) == 0):

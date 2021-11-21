@@ -1,4 +1,6 @@
 from path_planner import path_callback, translate_coords, set_start_point, hatching_planning
+import numpy as np
+import cv2
 
 # масштаб (пикселей на метр)
 ppm = 2
@@ -34,3 +36,9 @@ geo_square = set_start_point(start_point, geo_square)
 
 print(geo_coords)
 print(geo_square)
+
+img = np.zeros((np.amax(points_to_hatch, axis=0) + np.amin(points_to_hatch, axis=0))[::-1], np.uint8)
+for point in points_to_hatch:
+    cv2.line(img, point, point, 255, 5)
+cv2.imshow('points of convex polygon', img)
+cv2.waitKey()
