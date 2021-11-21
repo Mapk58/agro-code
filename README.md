@@ -13,7 +13,7 @@ python3 main_new.py
 
 
 # UI/UX
-![UI_1](https://github.com/Mapk58/agro-code/blob/main/Media/photo_2021-11-21_13-56-15.jpg)
+![UI_1](https://github.com/Mapk58/agro-code/blob/main/Media/g.gif?raw=true)
 
 ![UI_2](https://github.com/Mapk58/agro-code/blob/main/Media/photo_2021-11-21_15-13-30.jpg)
 
