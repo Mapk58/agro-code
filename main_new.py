@@ -67,7 +67,7 @@ class agro_sim():
 
         #perpendicular
         a, b = round(self.tool * sin(angle)), round(self.tool * cos(angle))
-
+        #print(self.tool)
         cv2.line(self.filled, (current_point[0] + a, current_point[1] - b), (current_point[0] - a, current_point[1] + b), (0, 255, 0), 2, cv2.LINE_8)
   
         if current_point == (x2, y2):
@@ -109,18 +109,13 @@ if __name__ == "__main__":
     ppm = 2
     # параметры для поиска пути объезда по периметру (крутилки)
     # все числа float, кроме smoothing
-    # расстояние между центром робота и границей поля aka радиус сеялки в метрах [0; inf)
-    obstacle_size = 6
+    
     # радиус поворота в метрах [0; inf)
     angle_radius = 6.0
     # степень сглаживания [1; inf)
     smoothing = 1
     # степень упрощения пути алгоритмом Рамера-Дугласа-Пекера (0; inf)
     rdp_epsilon = 1
-
-    # размеры используемого устройства
-
-    tool_size_list = [5, 11.9]
 
     # file path list
     fields_path_dir_list = ["Trimble/Pole",
@@ -136,13 +131,20 @@ if __name__ == "__main__":
                                 (34.83020335435867,49.54095106379548),
                                 (27.375474125146866, 53.26050256167628)]                        
 
+    # размеры используемого устройства
+    tool_size_list = [5, 12]
+
     # индекс рабочего поля (0 - поле агрокода, 1 - поле в РХТУ им.Тимирязева, 2 - поле в Череповце, 3 - поле в/на Украине, 4 - поле в Беларуси)
     place_id = 0
 
     # индекс рабочего инструмента (0 - сеялка, 1 - полив)
     tool_id = 0
 
+    # расстояние между центром робота и границей поля aka радиус сеялки в метрах [0; inf)
+    obstacle_size = tool_size_list[tool_id] + 1
+
     start_point = start_point_field_list[place_id]
+    
     path_dir = fields_path_dir_list[place_id]
 
     
@@ -150,13 +152,13 @@ if __name__ == "__main__":
     if tool_id == 0:
         borders = 2
     else: 
-        borders = 3
+        borders = 1
 
     
     sf = shapefile.Reader(path_dir)
     s = sf.shape(0)
     points = s.points
-    sim = agro_sim(4, sf.bbox, tool_size_list[0], 5)
+    sim = agro_sim(4, sf.bbox, tool_size_list[tool_id], 5)
     sim.draw_contour(points, 1)
 
     for border in range(0,borders):
@@ -168,15 +170,17 @@ if __name__ == "__main__":
         image, path_image, geo_coords, convertation_table = path_callback(ppm, path_dir, obstacle, angle_radius, smoothing, rdp_epsilon, start_point)   
         track += list(geo_coords)
         
-        
-        x1 = track[-2][0] + (track[-1][0]-track[-2][0])/2
-        y1 = track[-2][1] + (track[-1][1]-track[-2][1])/2
+        if tool_id == 0:
+            x1 = track[-2][0] + (track[-1][0]-track[-2][0])/2
+            y1 = track[-2][1] + (track[-1][1]-track[-2][1])/2
 
+            track.pop()
+            track.append([x1,y1])
+
+    if tool_id == 0:
         track.pop()
-        track.append([x1,y1])
+        track.pop()       
 
-    track.pop()
-    track.pop()            
     for i in range(len(track) - 1):
         k = 0
         while not sim.step_tractor(track[i], track[i+1], k, True):
