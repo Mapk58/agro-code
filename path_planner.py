@@ -177,25 +177,23 @@ def hatching_planning(points):
         lines['undone'].append(Line(points[i], points[i + 1]))
     tree = split_into_fields(lines['undone'], points)
 
-    # 1 and 5
-    # cv2.contourArea(a['done'][0]), cv2.contourArea(a['points'][0])
 
     ############## vis ####################
-
-    img1 = np.zeros((np.amax(points, axis=0) + np.amin(points, axis=0))[::-1], np.uint8)
-    img2 = np.zeros((np.amax(points, axis=0) + np.amin(points, axis=0))[::-1], np.uint8)
-    img3 = np.zeros((np.amax(points, axis=0) + np.amin(points, axis=0))[::-1], np.uint8)
-
-    for point in points:
-        cv2.line(img1, point, point, 255, 5)
-    for point in tree[1]['done'][0]:
-        cv2.line(img2, point, point, 255, 5)
-    for point in tree[1]['points'][0]:
-        cv2.line(img3, point, point, 255, 5)
-    cv2.imshow('1', img1)
-    cv2.imshow('2', img2)
-    cv2.imshow('3', img3)
-    cv2.waitKey()
+    #
+    # img1 = np.zeros((np.amax(points, axis=0) + np.amin(points, axis=0))[::-1], np.uint8)
+    # img2 = np.zeros((np.amax(points, axis=0) + np.amin(points, axis=0))[::-1], np.uint8)
+    # img3 = np.zeros((np.amax(points, axis=0) + np.amin(points, axis=0))[::-1], np.uint8)
+    #
+    # for point in points:
+    #     cv2.line(img1, point, point, 255, 5)
+    # for point in tree[1]['done'][0]:
+    #     cv2.line(img2, point, point, 255, 5)
+    # # for point in tree[1]['points'][0][1]:
+    # #     cv2.line(img3, point, point, 255, 5)
+    # cv2.imshow('1', img1)
+    # cv2.imshow('2', img2)
+    # # cv2.imshow('3', img3)
+    # cv2.waitKey()
 
     #######################################
 
@@ -208,7 +206,9 @@ def hatching_planning(points):
     #         subline['tree'] = split_into_fields(subline['undone'], subline['points'][0])
     #
     # print(tree)
-
+    a = tree[0]['done']
+    toReturn = max(tree, key=lambda x: cv2.contourArea(x['done'][0]))
+    return toReturn['done']
 
 def split_into_fields(field, points):
     if (len(points) == 0):

@@ -25,5 +25,12 @@ path_coords, simple_path_coords, convertation_table = path_callback(ppm, "Trimbl
 geo_coords = translate_coords(path_coords, convertation_table)
 # выбор стартовой точки, наиболее близкой к заданной
 geo_coords = set_start_point(start_point, geo_coords)
+# выпуклая фигура для заштриховки
+points_to_hatch = hatching_planning(simple_path_coords)
+# перевод в гео
+geo_square = translate_coords(points_to_hatch, convertation_table)
+# выбор стартовой точки, наиболее близкой к заданной
+geo_square = set_start_point(start_point, geo_square)
 
-hatching_planning(simple_path_coords)
+print(geo_coords)
+print(geo_square)
