@@ -147,7 +147,7 @@ def path_callback(ppm = 1, path_dir= "Trimble/Pole", obstacle_size=20.0, angle_r
     # выбор стартовой точки, наиболее близкой к заданной
     geo_coords = set_start_point(start_point, geo_coords)
 
-    return image, path_image, geo_coords
+    return image, path_image, geo_coords, convertation_table
 
 '''
 # масштаб (пикселей на метр)

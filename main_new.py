@@ -51,20 +51,25 @@ class agro_sim():
             cv2.line(self.field, (x1, y1), (x2, y2), (0, 0, 255), width)
         return self.field
 
+    #draw small red line wth big green line 
     def step_tractor(self, origin_point, desired_point, iter, not_end):
         x1 = int(round((origin_point[0] - self.min_x) / self.xw_step))
         y1 = int(round((origin_point[1] - self.min_y) / self.yh_step))
         x2 = int(round((desired_point[0] - self.min_x) / self.xw_step))
         y2 = int(round((desired_point[1] - self.min_y) / self.yh_step))
+        
         angle = atan2(y2 - y1, x2 - x1)
         
         #cv2.circle(self.field, (x1, y1), 2, (255,0,0), 2)
         #cv2.circle(self.field, (x2, y2), 2, (0,255,0), 2)
         cv2.line(self.track, (x1, y1), (x2, y2), (0, 0, 255), 1)
         current_point = (round(iter * cos(angle) + x1), round(iter * sin(angle) + y1))
-        #cv2.circle(mask, (current_point[0], current_point[1]), 1, (0, 0, 255), 1)
+
+        #perpendicular
         a, b = round(self.tool * sin(angle)), round(self.tool * cos(angle))
+
         cv2.line(self.filled, (current_point[0] + a, current_point[1] - b), (current_point[0] - a, current_point[1] + b), (0, 255, 0), 2, cv2.LINE_8)
+  
         if current_point == (x2, y2):
             cv2.circle(self.filled, (x2, y2), self.tool + 1, (0, 255, 0), -1)
             return 1
@@ -95,14 +100,17 @@ def translate_coords(pixel_coords, convertation_table):
 if __name__ == "__main__":
     
     from main import path_callback
-    
+    from pattern import relocation
+
+    track = []
+
     # масштаб (пикселей на метр)
     # влияет на точность
     ppm = 2
     # параметры для поиска пути объезда по периметру (крутилки)
     # все числа float, кроме smoothing
     # расстояние между центром робота и границей поля aka радиус сеялки в метрах [0; inf)
-    obstacle_size = 7
+    obstacle_size = 6
     # радиус поворота в метрах [0; inf)
     angle_radius = 6.0
     # степень сглаживания [1; inf)
@@ -110,36 +118,70 @@ if __name__ == "__main__":
     # степень упрощения пути алгоритмом Рамера-Дугласа-Пекера (0; inf)
     rdp_epsilon = 1
 
-    # точка, рядом с которой должен начинаться путь
+    # размеры используемого устройства
 
+    tool_size_list = [5, 11.9]
+
+    # file path list
     fields_path_dir_list = ["Trimble/Pole",
                             "Moscow/Moscow",
                             "Cherep/Cherep",
                             "Ukraine/Ukraine",
                             "Belarus/Belarus"]
 
+    # точка, рядом с которой должен начинаться путь
     start_point_field_list =   [(26.97198642737419,53.21268092272585),
                                 (37.55972921848297,55.837689974599186),
                                 (37.85521745681763,59.18315110901265),
                                 (34.83020335435867,49.54095106379548),
                                 (27.375474125146866, 53.26050256167628)]                        
 
+    # индекс рабочего поля (0 - поле агрокода, 1 - поле в РХТУ им.Тимирязева, 2 - поле в Череповце, 3 - поле в/на Украине, 4 - поле в Беларуси)
     place_id = 0
+
+    # индекс рабочего инструмента (0 - сеялка, 1 - полив)
+    tool_id = 0
+
     start_point = start_point_field_list[place_id]
     path_dir = fields_path_dir_list[place_id]
 
-    image, path_image, geo_coords = path_callback(ppm, path_dir, obstacle_size, angle_radius, smoothing, rdp_epsilon, start_point)
+    
+    # зависит от используемого инструмента
+    if tool_id == 0:
+        borders = 2
+    else: 
+        borders = 3
 
+    
     sf = shapefile.Reader(path_dir)
     s = sf.shape(0)
     points = s.points
-    sim = agro_sim(1, sf.bbox, 5, 5)
+    sim = agro_sim(4, sf.bbox, tool_size_list[0], 5)
     sim.draw_contour(points, 1)
-    
-    track = geo_coords
+
+    for border in range(0,borders):
+        
+        
+        obstacle = (obstacle_size + (tool_size_list[tool_id]*1.5*border))
+        print("obstacle - ", obstacle)
+
+        image, path_image, geo_coords, convertation_table = path_callback(ppm, path_dir, obstacle, angle_radius, smoothing, rdp_epsilon, start_point)   
+        track += list(geo_coords)
+        
+        
+        x1 = track[-2][0] + (track[-1][0]-track[-2][0])/2
+        y1 = track[-2][1] + (track[-1][1]-track[-2][1])/2
+
+        track.pop()
+        track.append([x1,y1])
+
+    track.pop()
+    track.pop()            
     for i in range(len(track) - 1):
         k = 0
         while not sim.step_tractor(track[i], track[i+1], k, True):
             sim.show(1)
             k += 1
+
+    #print(track)
     cv2.waitKey(0)
