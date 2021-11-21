@@ -1,0 +1,117 @@
+footer{
+    margin-bottom: -100px;
+    margin-top: 20px;
+    display: flex;
+    align-items: flex-end;
+}
+#body_main{
+    margin-bottom: -125px;
+    margin-top: -20px;
+}
+#misis{
+    width: 100px;
+    margin-left: 25px;
+}
+#map{
+    width: 100%; 
+    height: 100%; 
+    padding: 0; 
+    margin: 0;
+
+}
+#four_buttons{
+    margin-top: -35px;
+}
+#krutilka{
+    width: 100%;
+}
+.age_show{
+    margin-top: 15px;
+}
+#coord{
+    margin-top: 15px;
+}
+#parametrs{
+    margin-top: 5px;
+}
+.dada{
+    padding: 0;
+    margin: 0;
+    text-align: center;
+}
+.chous {
+    width: 180px;
+    height: 50px;
+    border-radius: 4px;
+    text-align: center;
+    margin: 25px;
+    cursor: pointer;
+    display: block;
+    font: 14px/50px Tahoma;
+    transition: all 0.18s ease-in-out;
+    border: 1px solid  rgba(16, 185, 129);
+    background: linear-gradient(to top right, rgba(16, 185, 129), rgba(16, 185, 129), rgba(255, 255, 255) 80%, rgba(255, 255, 255)) top right/500% 500%;
+    color: rgba(16, 185, 129);
+}
+
+.chous:hover {
+    color: white;
+    background-position: bottom left;
+}
+    
+.my {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+/* .button_anim{
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+.button_anim::after{
+    content: "";
+    background-color: gray;
+    border-radius: 50%;
+    transition: width 1s ease, height 1s ease;
+
+    position: absolute;
+    top: var(--y);
+    left: var(--x);
+    transform: translate(-50%, -50%);
+    height: 0px;
+    width: 0px;
+    z-index: 0;
+}
+
+.button_anim:hover::after{
+    height: 100%;
+    width: 100%;
+}
+
+#floating_button{
+    text-decoration: none;
+    display: inline-block;
+    line-height: 45px;
+    text-transform: uppercase;
+    border: 1px solid black;
+    letter-spacing: 2px;
+    text-align: center;
+    font-weight: 600;
+    color: #524f4e;
+    background: white;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, .1);
+    transition: .3s;
+}
+#floating_button:focus{
+    box-shadow: 0 15px 20px rgba(46, 229, 157, .4);
+    color: white;
+    transform: translateY(-7px);
+}
+#color:focus{
+    background: #F881DA;
+    border: 1px solid #F881DA;
+} */

@@ -1,0 +1,9 @@
+fastapi
+typing
+requests
+numpy
+opencv-contrib-python
+shapefile
+vincenty
+rdp
+shutil
