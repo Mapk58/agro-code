@@ -100,8 +100,10 @@ class line:
 class point:
     def __init__(self, p, sim):
         self.p = p
-        self.x = int(round((p[0] - sim.min_x) / sim.xw_step))
-        self.y = int(round((p[1] - sim.min_y) / sim.yh_step))
+        self.x = p[0]
+        self.y = p[1]
+        #self.x = int(round((p[0] - sim.min_x) / sim.xw_step))
+        #self.y = int(round((p[1] - sim.min_y) / sim.yh_step))
         self.p = (self.x, self.y)
 if __name__ == "__main__":
     sf = shapefile.Reader("Trimble/Pole")
@@ -125,13 +127,23 @@ if __name__ == "__main__":
 
 
 
-
+    
+    track =[[809, 19],
+    [683, 84],
+    [546, 43],
+    [84, 272],
+    [368, 356],
+    [772, 425],
+    [827, 412],
+    [972, 94],
+    [810, 19]]
     
     points = []
     for i in track:
         points.append(point(i, sim))
     
     lines_xy = [[]]
+    '''
     for i in range(len(track) - 1):
         p1, p2 = track[i], track[i + 1]
         x1 = int(round((p1[0] - sim.min_x) / sim.xw_step))
@@ -140,6 +152,10 @@ if __name__ == "__main__":
         y2 = int(round((p2[1] - sim.min_y) / sim.yh_step))
         #print(x1, y1, x2, y2)
         lines_xy[0].append(line((x1, y1), (x2, y2)))
+    '''
+    for i in range(len(track) - 1):
+        p1, p2 = track[i], track[i + 1]
+        lines_xy[0].append(line(p1, p2))
     lines_xy[0].sort(key=lambda x:x.length)
     lines_xy[0] = lines_xy[0][::-1]
     
