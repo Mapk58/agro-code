@@ -152,7 +152,7 @@ if __name__ == "__main__":
     
     # зависит от используемого инструмента
     if tool_id == 0:
-        borders = 2
+        borders = 13
     else: 
         borders = 1
 
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     sf = shapefile.Reader(path_dir)
     s = sf.shape(0)
     points = s.points
-    sim = agro_sim(4, sf.bbox, tool_size_list[tool_id], 5)
+    sim = agro_sim(3, sf.bbox, tool_size_list[tool_id], 5)
     sim.draw_contour(points, 1)
 
     for border in range(0,borders):
@@ -181,18 +181,20 @@ if __name__ == "__main__":
 
     if tool_id == 0:
         track.pop()
-        track.pop()       
-    write_shp(track)
+        track.pop()   
+        write_shp(track, "./json/Pole_first.json")
+    else:
+        write_shp(track, "./json/Pole_second.json")
+    
     for i in range(len(track) - 1):
         k = 0
         while not sim.step_tractor(track[i], track[i+1], k, True):
             sim.show(1)
             k += 1
 
+    track.append( [start_point_field_list[place_id]])
+
     get_perimeter_part(image, ppm, angle_radius=5, smoothing=1, enable_showing=False)
-
-    write_shp(track)
-
-    #print(track)
+    sim.show(1)
     cv2.waitKey(0)
 
