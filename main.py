@@ -1,9 +1,9 @@
-from path_planner import path_callback, translate_coords, set_start_point
+from path_planner import path_callback, translate_coords, set_start_point, hatching_planning
 
 # масштаб (пикселей на метр)
 ppm = 2
 # расстояние между центром робота и границей поля aka радиус сеялки в метрах [0; inf)
-obstacle_size = 7
+obstacle_size = 6
 # радиус поворота в метрах [0; inf)
 angle_radius = 6.0
 # степень сглаживания [1; inf)
@@ -26,6 +26,4 @@ geo_coords = translate_coords(path_coords, convertation_table)
 # выбор стартовой точки, наиболее близкой к заданной
 geo_coords = set_start_point(start_point, geo_coords)
 
-print(geo_coords)
-print(path_coords)
-print(simple_path_coords)
+hatching_planning(simple_path_coords)
