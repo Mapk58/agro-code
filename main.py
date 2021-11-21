@@ -123,6 +123,20 @@ def get_perimeter_path(img, ppm, obstacle_size=5, angle_radius=5, smoothing=1, r
 
     return path, field_edge
 
+def get_perimeter_part(img, ppm, angle_radius=5, smoothing=1, enable_showing=False):
+    image = img.copy()
+
+    cv2.floodFill(image, None, (int(image.shape[1] / 2), int(image.shape[0] / 2)), 255)
+    show_image('filled', image, enable_showing)
+
+    # обрезаем углы
+    kernel_size = int(angle_radius * ppm) * 2
+    image = cv2.morphologyEx(image, cv2.MORPH_OPEN,
+                             cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size)),
+                             iterations=smoothing)
+    show_image('opened', image, enable_showing)
+
+
 
 def translate_coords(pixel_coords, convertation_table):
     geo_coords = []

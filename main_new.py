@@ -100,7 +100,9 @@ def translate_coords(pixel_coords, convertation_table):
 if __name__ == "__main__":
     
     from main import path_callback
-    from pattern import relocation
+    from main import get_perimeter_part
+    from shape_writer import write_shp
+    #from pattern import relocation
 
     track = []
 
@@ -180,12 +182,17 @@ if __name__ == "__main__":
     if tool_id == 0:
         track.pop()
         track.pop()       
-
+    write_shp(track)
     for i in range(len(track) - 1):
         k = 0
         while not sim.step_tractor(track[i], track[i+1], k, True):
             sim.show(1)
             k += 1
 
+    get_perimeter_part(image, ppm, angle_radius=5, smoothing=1, enable_showing=False)
+
+    write_shp(track)
+
     #print(track)
     cv2.waitKey(0)
+
