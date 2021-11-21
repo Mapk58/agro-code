@@ -9,6 +9,6 @@ python3 main_new.py
 ```
 ![Backend](https://github.com/Mapk58/agro-code/blob/main/Media/photo_2021-11-21_13-56-15.jpg)
 
-![Backend](https://github.com/Mapk58/agro-code/blob/main/Media/photo_2021-11-21_15-13-30.jpg)
+![UI1](https://github.com/Mapk58/agro-code/blob/main/Media/photo_2021-11-21_15-13-30.jpg)
 
-![Backend](https://github.com/Mapk58/agro-code/blob/main/Media/image_2021-11-21_14-54-23.png)
+![UI2](https://github.com/Mapk58/agro-code/blob/main/Media/image_2021-11-21_14-54-23.png)
